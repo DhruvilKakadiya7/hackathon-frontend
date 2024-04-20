@@ -1,0 +1,12 @@
+iframe { 
+    border-radius: 10px; 
+    overflow: hidden; 
+} 
+
+body{
+    height: 100vh;
+}
+
+.mainUI{
+    height: 100vh;
+}
