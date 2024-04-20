@@ -24,7 +24,7 @@ import toast from "react-hot-toast";
       try{
           const response = await axios.post("https://hackathon-15hf.onrender.com/auth/signup",{email,password})
           if(response.data.status===true){
-            navigateTo('/login')
+            navigateTo('/')
             toast.success("Signup Successfully")
           }
           else {

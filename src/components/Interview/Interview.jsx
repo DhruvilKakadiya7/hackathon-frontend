@@ -3,33 +3,45 @@ import { Box, Button } from '@mui/material';
 import './Interview.css';
 import video from '../../assets/istockphoto-1578508100-640_adpp_is.mp4';
 import { useSpeechRecognition } from 'react-speech-kit';
+import MicIcon from '@mui/icons-material/Mic';
 import axios from 'axios'
 
 const NewQuestion = ({ idx, questions, responses }) => {
-  console.log(idx, questions, responses);
-  const [value, setValue] = React.useState('');
-
   return (
-    <div className='font-bold mb-3'>
-      {`Question-${idx+1}: ${questions[idx].question}`}
-    </div>
+    <>
+      <div className='font-bold mb-3'>
+        {`Question-${idx + 1}: ${questions[idx].question}`}
+      </div>
+    </>
   );
-}
+};
+
+const NewResponse = ({ responses, idx }) => {
+  return (
+    <>
+      <div className=' mb-3'>
+        {`Answer-${idx + 1}: ${responses[idx].answer}`}
+      </div>
+    </>
+  );
+};
 
 function Interview() {
   const [value, setValue] = React.useState('');
+  const [disableAll, setDisableAll] = React.useState(true);
+  const [disablePlay, setDisablePlay] = React.useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [count, setCount] = useState(0);
   const videoRef = React.useRef(null);
   const { listen, stop } = useSpeechRecognition({
     onResult: (result) => {
-      console.log(result);
-      setValue(result)
+      setValue(result);
     }
   });
 
   const playVideo = () => {
     videoRef.current.play();
+    setDisablePlay(true);
   }
   const [questions, setQuestions] = useState();
   const [loader, setLoader] = useState(true);
@@ -42,15 +54,27 @@ function Interview() {
     setResponses(responses);
   };
 
+  const nothing = () => {
+    if (responses.length < components.length) {
+      setResponses([...responses, { question: questions[questions.length - 1].question, answer: value }]);
+      setValue('');
+      setIsListening(false);
+      stop();
+    }
+  };
+
   const addComponent = () => {
-    console.log(count, questions[count+1].videoUrl);
+    setDisablePlay(false);
+    setDisableAll(true);
+    setIsListening(false);
+    stop();
     videoRef.current.pause();
     var source = document.getElementById('hr-vdo');
     videoRef.current.load();
-    source.setAttribute('src', questions[count+1].videoUrl);
-    setVideoUrl(questions[count+1].videoUrl);
+    source.setAttribute('src', questions[count + 1].videoUrl);
+    setVideoUrl(questions[count + 1].videoUrl);
     setCount((prev) => prev + 1);
-    setResponses([...responses, value]);
+    setResponses([...responses, { question: questions[count].question, answer: value }]);
     setValue('');
     setComponents([...components,
     <NewQuestion key={components.length} idx={components.length} questions={questions} responses={responses} />
@@ -60,7 +84,7 @@ function Interview() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/iv/getQuestions');
+        const { data } = await axios.get('https://hackathon-15hf.onrender.com/iv/getQuestions');
         setQuestions(data.data);
         setVideoUrl(data.data[0].videoUrl);
         setComponents([<NewQuestion key={0} idx={0} questions={data.data} responses={responses} />]);
@@ -80,7 +104,7 @@ function Interview() {
     <>
       {loader ? "" :
         <div className='mainUI'>
-          <div className='text-center text-lg p-4'>
+          <div className='text-center text-lg p-1'>
             Interview
           </div>
           <div className='grid grid-cols-12 !h-full'>
@@ -90,15 +114,18 @@ function Interview() {
                 height: 500,
                 borderRadius: 5,
               }}
-              className="rounded-lg p-5 col-span-5 bg-gray-300 ml-3 !w-full !h-full"
+              className="rounded-lg px-2 col-span-5 ml-3 !w-full !h-full"
             >
-              <video controls={false} ref={videoRef} onEnded={() => setVideoEnded(true)} className='h-full w-full'>
-                {console.log(videoUrl)}
-                  <source id='hr-vdo' src={videoUrl} type="video/mp4" />
+              <video controls={false} ref={videoRef} onEnded={() => {
+                setVideoEnded(true);
+                setDisableAll(false);
+              }}
+                className='h-full w-full'>
+                <source id='hr-vdo' src={videoUrl} type="video/mp4" />
                 Your browser does not support HTML video.
               </video>
               <div className='flex justify-center'>
-                <Button onClick={playVideo} variant="contained">Play</Button>
+                <Button className='absolute bottom-16' onClick={playVideo} variant="contained" disabled={disablePlay}>Play</Button>
               </div>
             </Box>
             <Box
@@ -109,47 +136,58 @@ function Interview() {
               }}
               className="rounded-lg p-5 col-span-7 !w-full !h-full"
             >
-              <div className='h-full w-full p-5 bg-gray-400 rounded-lg'>
+              <div className='h-full w-full p-5 bg-gray-200 rounded-lg  overflow-y-scroll'>
                 {components.map((cmp, i) => {
                   return (
                     <div key={i}>
                       {cmp}
+                      {
+                        (responses.length > i) ? <NewResponse responses={responses} idx={i} /> : <></>
+                      }
                     </div>
                   )
                 })}
-                <button onClick={addComponent} type='button' disabled={count == questions.length - 1 ? true : false}>Save</button>
-                <div>
-                  <div className='bg-yellow'>{value}</div>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (isListening) {
-                        setIsListening(false);
-                        stop();
-                      }
-                      else {
-                        setIsListening(true);
-                        listen();
-                      }
-                    }}
-                  // onMouseUp={stop}
-                  >
-                    🎤
-                  </button>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  let temp = responses;
-                  temp.push(value);
-                  setResponses([...responses, value]);
-                  console.log(temp);
-                  const data = axios.post('http://localhost:5000/iv/uploadResponses', {email: 'x@gmail.com', answers: temp});
 
-                }}
-              >
-                Submit
-              </button>
+              </div>
+              <div className='flex justify-center'>
+                {
+                  (responses.length === questions.length) ?
+                    <Button
+                      variant="contained"
+                      className='absolute bottom-12'
+                      onClick={() => {
+                        console.log(responses);
+                        const data = axios.post('https://hackathon-15hf.onrender.com/iv/uploadResponses', { email: 'x@gmail.com', answers: responses });
+                      }}
+                    >
+                      Submit
+                    </Button>
+                    :
+                    <div>
+                      <div>
+                        <div>{value}</div>
+                        <button
+                          disabled={disableAll}
+                          className='text-lg absolute bottom-32'
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (isListening) {
+                              setIsListening(false);
+                              stop();
+                            }
+                            else {
+                              setIsListening(true);
+                              listen();
+                            }
+                          }}
+                        >
+                          <MicIcon />
+                        </button>
+                      </div>
+                      <Button className='absolute bottom-12' variant="contained" onClick={(count === questions.length - 1) ? nothing : addComponent} type='button' disabled={((responses.length === questions.length) || (disableAll)) ? true : false}>Save</Button>
+                    </div>
+                }
+              </div>
             </Box>
           </div>
         </div>
