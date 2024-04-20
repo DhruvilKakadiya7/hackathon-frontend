@@ -8,12 +8,16 @@ import interviewRouter from './route/interview.route.js';
 import cookieParser from 'cookie-parser';
 const app = express();
 import dotenv from 'dotenv';
+import AIRouter from './route/shortlist.route.js';
+import LoginRouter from './route/login.router.js';
 dotenv.config();
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser()); 
 app.use('/iv', interviewRouter);
+app.use('/ai', AIRouter);
+app.use('/auth', LoginRouter);
 
 mongoose.set('strictQuery', false);
 mongoose.connect('mongodb+srv://hackathon:hackathon@cluster0.1pqceio.mongodb.net/?retryWrites=true&w=majority')
