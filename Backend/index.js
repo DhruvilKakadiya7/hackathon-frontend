@@ -1,14 +1,27 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const Replicate  = require("replicate");
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
+import axios from 'axios';
+import Replicate from 'replicate';
+import interviewRouter from './route/interview.route.js';
+import cookieParser from 'cookie-parser';
 const app = express();
-require('dotenv').config();
-
+import dotenv from 'dotenv';
+dotenv.config();
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cookieParser());
+app.use(cookieParser()); 
+app.use('/iv', interviewRouter);
 
+mongoose.set('strictQuery', false);
+mongoose.connect('mongodb+srv://hackathon:hackathon@cluster0.1pqceio.mongodb.net/?retryWrites=true&w=majority')
+  .then(() => {
+    console.log("DataBase connection successful")
+  })
+  .catch((e) => { console.log("Database err " + e) }); 
+  
 const replicate = new Replicate({
     auth: process.env.REPLICATE_API_TOKEN,
 });
@@ -35,6 +48,6 @@ app.get('/getAudio' ,async (req,res) =>  {
     res.send(output);
 });
 
-app.listen(3000, () => {
+app.listen(5000, () => {
   console.log('listening on *:3000');
 });
