@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, TextField, MenuItem, InputLabel, FormControl } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Select from '@mui/material/Select';
 import { json, useNavigate } from "react-router-dom";
 import axios from 'axios';
@@ -9,7 +10,8 @@ function Dashboard() {
     const [name, setName] = React.useState('');
     const [institutionName, setInstitutionName] = React.useState('');
     const [graduationYear, setGraduationYear] = React.useState();
-    const [questions, setQuestions] = React.useState();
+    const [questions, setQuestions] = React.useState(0);
+    const [isSubmitting, setSubmitting] = useState(false);
     const uni = uuidv4();
 
     const submitForm = (e) => {
@@ -37,6 +39,7 @@ function Dashboard() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setSubmitting(true);
         if (!file) {
             setError('Please select a file.');
             return;
@@ -66,7 +69,7 @@ function Dashboard() {
             setError('');
             localStorage.setItem('interviewId', uni);
             console.log(uni);
-            const savedData = await axios.post('http://localhost:8000/iv/saveIV', {interviewId: uni, skills: res.data.text, count: questions});
+            const savedData = await axios.post('http://localhost:8000/iv/saveIV', { interviewId: uni, skills: res.data.text, count: questions });
             navigateTo(`/interview/${uni}`);
         } catch (error) {
             console.error('Error:', error);
@@ -126,9 +129,13 @@ function Dashboard() {
                             </Select>
                         </FormControl>
                         <input className='my-2' type="file" onChange={handleFileInput} />
-                        <Button variant="contained" type='button' onClick={handleSubmit}>
+                        {isSubmitting? <LoadingButton variant="contained" type='button' onClick={handleSubmit} loading>
                             Submit
-                        </Button>
+                        </LoadingButton>: <Button variant="contained" type='button' onClick={handleSubmit}>
+                            Submit
+                        </Button>}
+                        
+
                     </form>
                 </div>
             </div>

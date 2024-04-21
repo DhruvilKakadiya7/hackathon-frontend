@@ -5,12 +5,17 @@ import './index.css';
 function Feedback() {
     const name = localStorage.getItem('name');
     const uni = localStorage.getItem('interviewId');
-    const data = JSON.parse(localStorage.getItem('dataList'));
+    let data = JSON.parse(localStorage.getItem('dataList'));
+    let scores = JSON.parse(localStorage.getItem('scores'));
+    for (let i = 0; i < data.length; i++){
+        data[i]['score'] = scores[i];
+    }
     const csvData = [
-        ["Question", "Answer"],
-        ...data.map(({ question, answer }) => [
+        ["Question", "Answer", "Score out of 10"],
+        ...data.map(({ question, answer, score }) => [
             question,
             answer,
+            score
         ]),
     ];
     console.log(data);

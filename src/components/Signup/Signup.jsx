@@ -98,7 +98,7 @@ import toast from "react-hot-toast";
                   <Typography>
                   {"Already have an account? "} 
                     <Link
-                      href="/login"
+                      href="/"
                       variant="body2"
                       underline="none"
                       sx={{ fontSize: "16px" }}

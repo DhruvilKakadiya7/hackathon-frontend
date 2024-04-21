@@ -7,6 +7,7 @@ import MicIcon from '@mui/icons-material/Mic';
 import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import LoadingButton from '@mui/lab/LoadingButton';
 const Compo = () => {
   return (<>hi</>)
 }
@@ -41,6 +42,8 @@ function Interview() {
   const [videoEnded, setVideoEnded] = useState(false);
   const [count, setCount] = useState(0);
   const videoRef = React.useRef(null);
+  const [isSubmitting, setSubmitting] = useState(false);
+
   const data = JSON.parse(localStorage.getItem('dataList') || "[]");
   // const {isListening,transcript, startListening, stopListening} = useVoiceCollector();
   const { listen, stop } = useSpeechRecognition({
@@ -66,7 +69,7 @@ function Interview() {
     setVideoEnded(true);
     setDisableAll(false);
     // setIsListening(true);
-    start();
+    // start();
   };
 
   const nothing = () => {
@@ -116,7 +119,7 @@ function Interview() {
         let temp2 = [];
         let finals = [];
         for (let i = 0; i < data.data.length; i++) {
-          if (data.data[i]?.type === "basic") {
+          if (data.data[i]?.type === "basic" && finals.length === 0) {
             finals.push(data.data[i])
           }
           else {
@@ -166,7 +169,7 @@ function Interview() {
             <div>{`You might have done with the interview already!!!`}</div>
           </div> :
           <div className='mainUI'>
-            <div className='text-center text-lg p-1'>
+            <div className='text-center text-lg p-1 font-bold'>
               Interview
             </div>
             <div className='grid grid-cols-12 !h-full'>
@@ -215,18 +218,30 @@ function Interview() {
                 <div className='flex justify-center'>
                   {
                     (responses?.length === questions?.length) ?
-                      <Button
-                        variant="contained"
-                        onClick={() => {
-                          console.log(responses);
-                          const data = axios.post('http://localhost:8000/iv/uploadResponses', { interviewId: id, answers: responses });
-                          localStorage.setItem('interviewId', id);
-                          localStorage.setItem('dataList', JSON.stringify(responses));
-                          navigateTo('/feedback');
-                        }}
-                      >
-                        Submit
-                      </Button>
+                      <>
+                        {isSubmitting ?
+                          <LoadingButton variant="contained" type='button' loading>
+                            Submit
+                          </LoadingButton> :
+                          <Button
+                            variant="contained"
+                            onClick={async () => {
+                              console.log(responses);
+                              setSubmitting(true);
+                              const res = await axios.post('http://localhost:8000/iv/uploadResponses', { interviewId: id, answers: responses });
+                              const data = await axios.post('http://localhost:8000/ai/checkAnswers', {responses});
+                              localStorage.setItem('interviewId', id);
+                              localStorage.setItem('dataList', JSON.stringify(responses));
+                              localStorage.setItem('scores', JSON.stringify(data.data.data));
+                              navigateTo('/feedback');
+                              setSubmitting(false);
+                            }}
+                          >
+                            Submit
+                          </Button>
+                        }
+                      </>
+
                       :
                       <div className='flex flex-row'>
                         <div>
