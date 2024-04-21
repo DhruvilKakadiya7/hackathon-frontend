@@ -3,17 +3,20 @@ import { Button, TextField, MenuItem, InputLabel, FormControl } from '@mui/mater
 import Select from '@mui/material/Select';
 import { json, useNavigate } from "react-router-dom";
 import axios from 'axios';
-
+import { v4 as uuidv4 } from 'uuid';
 function Dashboard() {
     const navigateTo = useNavigate();
     const [name, setName] = React.useState('');
     const [institutionName, setInstitutionName] = React.useState('');
     const [graduationYear, setGraduationYear] = React.useState();
     const [questions, setQuestions] = React.useState();
+    const uni = uuidv4();
 
     const submitForm = (e) => {
         e.preventDefault();
-        navigateTo('/interview');
+        console.log(uni);
+        localStorage.setItem('interviewId', uni);
+        navigateTo(`/interview/${uni}`);
     };
 
     // const handleFileInput = (e) => {
@@ -61,7 +64,10 @@ function Dashboard() {
             localStorage.setItem('languages', res.data.text);
             localStorage.setItem('name', name);
             setError('');
-            navigateTo('/interview');
+            localStorage.setItem('interviewId', uni);
+            console.log(uni);
+            const savedData = await axios.post('http://localhost:8000/iv/saveIV', {interviewId: uni, skills: res.data.text, count: questions});
+            navigateTo(`/interview/${uni}`);
         } catch (error) {
             console.error('Error:', error);
             setError('Error extracting text.');
@@ -98,12 +104,12 @@ function Dashboard() {
                             onChange={(e) => setGraduationYear(e.target.value)}
                         />
                         <FormControl fullWidth>
-                            <InputLabel id="demo-simple-select-label">Questions</InputLabel>
+                            <InputLabel id="demo-simple-select-label">{`Technical Questions`}</InputLabel>
                             <Select
                                 labelId="demo-simple-select-label"
                                 id="demo-simple-select"
                                 value={questions}
-                                label="Questions"
+                                label="Technical Questions"
                                 onChange={handleChange}
                             >
                                 <MenuItem value={0}>0</MenuItem>
