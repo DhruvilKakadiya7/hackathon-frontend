@@ -49,7 +49,7 @@ function Dashboard() {
         formData.append('file', file);
         console.log(formData);
         try {
-            const response = await fetch('http://localhost:5000/extract-text', {
+            const response = await fetch('https://lisa-python-backend-1.onrender.com/extract-text', {
                 method: 'POST',
                 body: formData,
             });
@@ -61,7 +61,7 @@ function Dashboard() {
             const data = await response.json();
             // console.log(data.text);
             setText(data.text);
-            const res = await axios.post('http://localhost:8000/ai/getSkills', { text: data.text });
+            const res = await axios.post('https://lisa-node-backend.onrender.com/ai/getSkills', { text: data.text });
             //   let tmp = await res.json();
             console.log(res.data.text);
             localStorage.setItem('languages', res.data.text);
@@ -69,7 +69,7 @@ function Dashboard() {
             setError('');
             localStorage.setItem('interviewId', uni);
             console.log(uni);
-            const savedData = await axios.post('http://localhost:8000/iv/saveIV', { interviewId: uni, skills: res.data.text, count: questions });
+            const savedData = await axios.post('https://lisa-node-backend.onrender.com/iv/saveIV', { interviewId: uni, skills: res.data.text, count: questions });
             navigateTo(`/interview/${uni}`);
         } catch (error) {
             console.error('Error:', error);
