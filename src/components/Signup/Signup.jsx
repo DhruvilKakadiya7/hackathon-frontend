@@ -22,7 +22,7 @@ import toast from "react-hot-toast";
       var password = data.get("password");
     //   console.log(email);
       try{
-          const response = await axios.post("https://hackathon-15hf.onrender.com/auth/signup",{email,password})
+          const response = await axios.post("https://lisa-node-backend.onrender.com/auth/signup",{email,password})
           if(response.data.status===true){
             navigateTo('/')
             toast.success("Signup Successfully")
