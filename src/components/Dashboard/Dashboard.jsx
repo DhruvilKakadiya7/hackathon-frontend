@@ -49,7 +49,7 @@ function Dashboard() {
         formData.append('file', file);
         console.log(formData);
         try {
-            const response = await fetch('https://lisa-python-backend-1.onrender.com/extract-text', {
+            const response = await fetch('https://lisa-python-backend.onrender.com/extract-text', {
                 method: 'POST',
                 body: formData,
             });
